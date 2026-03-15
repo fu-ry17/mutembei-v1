@@ -9,7 +9,7 @@ async function updateJobStatus(
   status: string,
   error?: string | null,
 ) {
-  await api.patch(`/jobs/${jobId}`, { status, error: error ?? null });
+  await api.patch(`/jobs/${jobId}/status`, { status, error: error ?? null });
 }
 
 export const executeWorkflow = inngest.createFunction(
