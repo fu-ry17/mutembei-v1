@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 
 const ai = new GoogleGenAI({
-  apiKey: "AIzaSyCZsk12WQ7PRrMnJ59dfpRajmU-PXYRu48",
+  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY!,
 });
 
 export interface ServicePoint {
