@@ -11,6 +11,7 @@ async_engine = AsyncEngine(
         echo=False,
         pool_pre_ping=True,
         poolclass=NullPool,
+        connect_args={"ssl": "require"},
     )
 )
 
