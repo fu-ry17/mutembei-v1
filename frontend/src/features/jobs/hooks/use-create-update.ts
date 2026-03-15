@@ -8,8 +8,7 @@ import type {
   UpdateJobPayload,
   TriggerJobResponse,
 } from "../types";
-import { inngest } from "@/inngest/client";
-import { authClient } from "@/lib/auth-client";
+import { triggerJobAction } from "../action";
 
 type JobMutationPayload = CreateJobPayload | UpdateJobPayload;
 
@@ -46,11 +45,7 @@ export const useTriggerJob = () => {
   return useMutation({
     mutationFn: async (jobId: string): Promise<TriggerJobResponse> => {
       try {
-        const session = await authClient.getSession();
-        const res = await inngest.send({
-          name: "execute/workflow",
-          data: { jobId, userId: session?.data?.user.id },
-        });
+        const res = await triggerJobAction(jobId);
         return res as TriggerJobResponse;
       } catch (error) {
         return handleError(error) as never;
