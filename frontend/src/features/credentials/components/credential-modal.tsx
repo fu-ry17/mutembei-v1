@@ -190,7 +190,7 @@ export function CredentialModal({
                 className="h-10"
                 placeholder={
                   def.type === "facility_setup"
-                    ? "e.g. Tiberbu Health Login"
+                    ? "e.g. Facility Login"
                     : "e.g. Gemini Production Key"
                 }
                 value={title}

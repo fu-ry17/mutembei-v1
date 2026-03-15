@@ -1,5 +1,8 @@
+"use server";
+
 import { GoogleGenAI } from "@google/genai";
 
+// API key is only ever read on the server
 const ai = new GoogleGenAI({
   apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY!,
 });
@@ -176,7 +179,7 @@ export async function aiFormatExtra(
   rawServiceUnits: string,
 ): Promise<AIFormatResult> {
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.0-flash",
     contents: buildPrompt(rawUsers, rawServiceUnits),
     config: { temperature: 0 },
   });

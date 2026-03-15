@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useRef } from "react";
 import {
   Upload,
@@ -25,9 +27,9 @@ import {
   type SelfOnboardingFormState,
 } from "./self-onboarding-utils";
 import { useCreateUpdateJob } from "../../hooks/use-create-update";
-import { aiFormatExtra } from "./use-ai-format";
 import { toast } from "sonner";
 import type { Job } from "../../types";
+import { aiFormatExtra } from "../../actions/use-ai-format";
 
 interface Props {
   workflowId: string;

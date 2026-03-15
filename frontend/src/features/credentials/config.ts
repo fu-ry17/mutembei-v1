@@ -22,9 +22,6 @@ export interface CredentialDef {
 
 export type ModalMode = "create-type" | "create-form" | "update";
 
-// ── Single source of truth for credential types ───────────────────────────────
-// Add new credential types here — modal, cards, filters & payloads all derive from this.
-
 export const CREDENTIAL_DEFS: CredentialDef[] = [
   {
     type: "facility_setup",
@@ -37,7 +34,7 @@ export const CREDENTIAL_DEFS: CredentialDef[] = [
       {
         key: "email",
         label: "Email",
-        placeholder: "brian@tiberbu.com",
+        placeholder: "example@example.com",
         type: "email",
         required: true,
       },
@@ -53,7 +50,7 @@ export const CREDENTIAL_DEFS: CredentialDef[] = [
       {
         key: "url",
         label: "Login URL",
-        placeholder: "https://deploy.tiberbu.health/#/login",
+        placeholder: "https://google.com",
         type: "url",
         required: true,
       },
