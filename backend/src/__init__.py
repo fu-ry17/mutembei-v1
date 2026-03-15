@@ -18,9 +18,15 @@ async def life_span(app: FastAPI):
 
 app = FastAPI(lifespan=life_span)
 
+origins = [
+    "https://mutembei-v1.vercel.app",
+    "http://localhost:3000",  # for local dev
+    "http://localhost:5173",  # if using Vite
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,  # ✅ explicit origins, no wildcard
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
