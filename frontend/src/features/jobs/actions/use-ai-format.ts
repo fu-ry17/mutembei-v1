@@ -179,7 +179,7 @@ export async function aiFormatExtra(
   rawServiceUnits: string,
 ): Promise<AIFormatResult> {
   const response = await ai.models.generateContent({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash",
     contents: buildPrompt(rawUsers, rawServiceUnits),
     config: { temperature: 0 },
   });
