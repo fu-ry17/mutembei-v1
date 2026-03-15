@@ -123,23 +123,6 @@ async def restore_job(
     return obj
 
 
-@jobs_router.post("/{job_id}/trigger")
-async def trigger_job(
-    job_id: uuid.UUID,
-    session: AsyncSession = Depends(get_session),
-    user: dict = Depends(auth.verify_token),
-):
-    obj = await job_service.trigger_job(str(job_id), session, user["sub"])
-    if not obj:
-        raise HTTPException(status_code=404, detail="Job not found")
-    if obj == "limit_reached":
-        raise HTTPException(
-            status_code=429,
-            detail="You already have 2 active jobs. Wait for them to finish before triggering another.",
-        )
-    return obj
-
-
 @jobs_router.patch("/{job_id}/status", response_model=JobResponse)
 async def update_job_status(
     job_id: uuid.UUID,
