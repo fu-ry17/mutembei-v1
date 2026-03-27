@@ -3,12 +3,9 @@ import {
   Loader2,
   CheckCircle2,
   XCircle,
-  Globe,
   Terminal,
-  Bell,
-  CalendarClock,
-  Hand,
-  Users,
+  House,
+  Banknote,
 } from "lucide-react";
 
 export interface StatusConfig {
@@ -56,12 +53,8 @@ export interface TypeConfig {
 }
 
 export const TYPE_CONFIG: Record<string, TypeConfig> = {
-  self_onboarding: { label: "Self Onboarding", icon: Users },
-  http: { label: "HTTP", icon: Globe },
-  script: { label: "Script", icon: Terminal },
-  notification: { label: "Notification", icon: Bell },
-  scheduled: { label: "Scheduled", icon: CalendarClock },
-  manual: { label: "Manual", icon: Hand },
+  self_onboarding: { label: "Self Onboarding", icon: House },
+  shif_config: { label: "Shif Config", icon: Banknote },
 };
 
 export function getTypeConfig(type: string): TypeConfig {

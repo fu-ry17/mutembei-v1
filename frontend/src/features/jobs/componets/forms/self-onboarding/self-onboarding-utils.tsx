@@ -99,10 +99,6 @@ export function buildExtra(
   };
 }
 
-/**
- * Sheet layout: rows 1-2 = instructions, row 3 = headers, row 4+ = data
- * Valid row: must have a name AND at least email OR phone.
- */
 export async function extractUsers(
   file: File,
 ): Promise<{ users: ExtractedUser[]; total: number; error: string | null }> {

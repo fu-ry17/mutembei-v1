@@ -11,7 +11,7 @@ interface UseGetCredentialsParams {
 
 export const useGetCredentials = ({
   page = 1,
-  limit = 10,
+  limit = 5,
   search = "",
   credential_type,
 }: UseGetCredentialsParams = {}) => {

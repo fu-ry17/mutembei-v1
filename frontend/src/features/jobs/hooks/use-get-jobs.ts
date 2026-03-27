@@ -21,7 +21,7 @@ export const useGetJobs = ({
   status,
   search = "",
   page = 1,
-  limit = 10,
+  limit = 5,
   sort = "created_at:desc",
 }: UseGetJobsParams = {}) => {
   return useQuery({

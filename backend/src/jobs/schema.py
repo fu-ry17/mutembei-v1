@@ -53,6 +53,7 @@ class CredentialData(BaseModel):
 class JobWithCredentialsResponse(BaseModel):
     id: uuid.UUID
     title: str
+    type: str
     description: Optional[str] = None
     user_id: str
     workflow_id: uuid.UUID
@@ -71,3 +72,4 @@ class JobWithCredentialsResponse(BaseModel):
 class JobStatusUpdate(BaseModel):
     status: str
     error: Optional[str] = None
+    description: Optional[str] = None

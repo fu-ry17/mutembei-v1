@@ -1,5 +1,7 @@
+import SettingsClient from "@/features/settings/components/client";
+
 const Page = () => {
-  return <div>Settings Page</div>;
+  return <SettingsClient />;
 };
 
 export default Page;

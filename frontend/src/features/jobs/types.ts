@@ -58,5 +58,5 @@ export const JOB_STATUSES = [
 ] as const;
 export type JobStatus = (typeof JOB_STATUSES)[number];
 
-export const JOB_TYPES = ["self_onboarding", "http"] as const;
+export const JOB_TYPES = ["self_onboarding", "shif_config"] as const;
 export type JobType = (typeof JOB_TYPES)[number];

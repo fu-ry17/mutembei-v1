@@ -130,7 +130,7 @@ async def update_job_status(
     session: AsyncSession = Depends(get_session),
 ):
     updated = await job_service.update(
-        {"status": body.status, "error": body.error},
+        {"status": body.status, "error": body.error, "description": body.description},
         session,
         where={"id": job_id},
     )
