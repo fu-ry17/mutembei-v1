@@ -51,7 +51,7 @@ export function JobsList({ workflowId }: JobsListProps) {
   const [deleteTarget, setDeleteTarget] = useState<Job | null>(null);
 
   const { search, page, limit, filter, setSearch, setPage, setFilter } =
-    useTableParams<string>({ filterKey: "status", defaultLimit: 10 });
+    useTableParams<string>({ filterKey: "status", defaultLimit: 5 });
 
   const debouncedSearch = useDebounce(search, 400);
 
