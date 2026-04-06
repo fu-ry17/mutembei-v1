@@ -33,7 +33,7 @@ export interface SelfOnboardingFormState {
 }
 
 export const HEALTHCARE_SHEET = "Healthcare Practitioners";
-export const MAX_PREVIEW = 10;
+export const MAX_PREVIEW = 90;
 
 export function getInitialState(
   extra?: Record<string, unknown> | null,
