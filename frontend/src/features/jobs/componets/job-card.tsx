@@ -1,5 +1,12 @@
 import { useRouter } from "next/navigation";
-import { MoreVertical, Trash2, Play, Loader2, ArrowRight } from "lucide-react";
+import {
+  MoreVertical,
+  Trash2,
+  Play,
+  Loader2,
+  ArrowRight,
+  Rocket,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,8 +16,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { getStatusConfig, getTypeConfig } from "../config";
-import type { Job } from "../types";
+import { JOB_TYPES, type Job } from "../types";
 import { useJobStatus } from "../hooks/use-job-status";
+import { useCreateUpdateJob } from "../hooks/use-create-update";
 
 interface JobCardProps {
   job: Job;
@@ -35,9 +43,38 @@ export function JobCard({
   const isBusy = isDeleting || isTriggering;
   useJobStatus(job.id);
 
+  const { mutate: save, isPending } = useCreateUpdateJob();
+
+  const extra = job.extra as {
+    deployment_status?: string;
+    deployment_percentage?: string;
+  } | null;
+
+  const canDeploy =
+    job.type === "self_onboarding" && job.status === "completed";
+  const canRedeploy = job.type === "deployment";
+
   function handleView() {
     router.push(`/workflows/${job.workflow_id}/${job.id}`);
   }
+
+  const updateJobType = async (job: Job) => {
+    const { id, description, credential_id, error, extra, ...rest } = job;
+
+    save(
+      {
+        id,
+        ...rest,
+        type: JOB_TYPES[2],
+        description: description ?? undefined,
+      },
+      {
+        onSuccess: (data) => {
+          onTrigger(data);
+        },
+      },
+    );
+  };
 
   return (
     <div
@@ -62,7 +99,17 @@ export function JobCard({
             {typeCfg.label}
           </span>
         </div>
-        {job.description ? (
+
+        {job.type === "self_onboarding" || job.type === "deployment" ? (
+          <p className="text-xs text-muted-foreground truncate mt-0.5">
+            Deployment:{" "}
+            <span className="capitalize">
+              {extra?.deployment_status ?? "pending"}
+            </span>
+            {" · "}
+            {extra?.deployment_percentage ?? "0.00"}%
+          </p>
+        ) : job.description ? (
           <p className="text-xs text-muted-foreground truncate mt-0.5">
             {job.description}
           </p>
@@ -124,6 +171,34 @@ export function JobCard({
           >
             <Play size={11} className="mr-1.5" /> Trigger
           </DropdownMenuItem>
+          {canDeploy && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="cursor-pointer text-xs py-1.5"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateJobType(job);
+                }}
+              >
+                <Rocket size={11} className="mr-1.5" /> Deploy
+              </DropdownMenuItem>
+            </>
+          )}
+          {canRedeploy && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="cursor-pointer text-xs py-1.5"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onTrigger(job);
+                }}
+              >
+                <Rocket size={11} className="mr-1.5" /> Redeploy
+              </DropdownMenuItem>
+            </>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem
             className="cursor-pointer text-xs py-1.5 text-destructive focus:text-destructive"

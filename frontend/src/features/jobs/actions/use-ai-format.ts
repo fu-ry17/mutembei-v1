@@ -53,44 +53,81 @@ const ALLOWED_ROLES = new Set([
 ]);
 
 const PRACTITIONERS_PROMPT = `
-You are a highly accurate data extraction assistant for a healthcare facility.
-Return ONLY a JSON array. No markdown, no backticks, no explanations, no extra text.
+You are a data extraction assistant for a healthcare facility onboarding system.
 
-For each practitioner in the input data, extract the following fields:
+YOUR ONLY JOB: Read the input list of practitioners and return a JSON array.
 
-- name: Full name as-is. Do NOT split into first/last.
-- email: Lowercase. Fix obvious typos:
-    - Common domain typos (e.g., "gnail.com" → "gmail.com", "hotnail.com" → "hotmail.com", "yaho.com" → "yahoo.com").
-    - Missing "@" (e.g., "johngmail.com" → "john@gmail.com").
-    - Include as-is if unfixable.
-- phone: Normalize to digits only and always include Kenyan country code:
-    - If the number starts with "0", replace the leading "0" with "+254".
-    - If the number starts with "254", prepend "+" if missing.
-    - If the number already starts with "+254", leave as-is.
-    - Remove all spaces, dashes, and parentheses.
-- national_id: ID card number only. Omit if not present.
-- gender: "Male" or "Female". Infer from first name if missing. Omit if cannot determine.
-- role: Map the practitioner's cadre/title to exactly one of these case-sensitive values:
-  "Pharmacist Manager", "Pharmacist Admin", "Pharmacist", "Nurse",
-  "Lab Technician", "HRIO", "Dispensary Nurse", "Physician"
-  Mapping rules (case-insensitive):
-    - KRCHN / RN / registered nurse / nursing officer / enrolled nurse → Nurse
-    - Dispensary Nurse / dispenser / dispensing nurse → Dispensary Nurse
-    - MLT / medical lab / lab tech / laboratory technician → Lab Technician
-    - HRIO / health records / health information officer → HRIO
-    - Pharmacist Manager / pharmacy manager → Pharmacist Manager
-    - Pharmacist Admin / pharmacy admin → Pharmacist Admin
-    - Pharmacist / pharmaceutical technologist / pharm tech → Pharmacist
-    - MO / medical officer / doctor / clinical officer / CO / KEPH / RCO / CHO / community health officer → Physician
-    - Unknown or missing → Physician
+=== OUTPUT FORMAT ===
+Return ONLY a raw JSON array. No markdown. No backticks. No explanation. No extra text.
+Start your response with [ and end with ]. Nothing before or after.
 
-Skip any entry that is missing BOTH email and phone.
+Example of correct output:
+[{"name":"John Doe","email":"john@gmail.com","phone":"+254712345678","national_id":"12345678","gender":"Male","role":"Nurse"}]
 
-Ensure:
-- No additional fields are included.
-- Output is a valid JSON array of objects.
-- Do NOT add any formatting, comments, or text outside the JSON.
-- Validate emails and phone numbers as best as possible, fixing obvious typos and normalizing formats.
+=== FIELDS TO EXTRACT FOR EACH PERSON ===
+
+1. name (REQUIRED)
+   - Copy the full name exactly as given. Do NOT split it.
+
+2. email (REQUIRED — skip the entire person if missing or has no "@")
+   - Lowercase the entire email.
+   - Fix obvious domain typos:
+       "gnail.com"   → "gmail.com"
+       "gmal.com"    → "gmail.com"
+       "gamil.com"   → "gmail.com"
+       "hotnail.com" → "hotmail.com"
+       "hotmil.com"  → "hotmail.com"
+       "yaho.com"    → "yahoo.com"
+       "yahooo.com"  → "yahoo.com"
+   - If "@" is missing but domain is obvious, insert "@":
+       "johngmail.com" → "john@gmail.com"
+   - If the email cannot be reasonably fixed, include it as-is.
+
+3. phone (REQUIRED — skip the entire person if missing)
+   - Remove all spaces, dashes, and parentheses first.
+   - Then apply ONE of these rules:
+       Starts with "0"    → replace "0" with "+254"   e.g. 0712345678 → +254712345678
+       Starts with "254"  → prepend "+"               e.g. 254712345678 → +254712345678
+       Starts with "+254" → leave unchanged
+       Anything else      → prepend "+254"
+   - Final phone must always start with "+254".
+
+4. national_id (OPTIONAL)
+   - Include only if a numeric ID card number is present.
+   - Omit the field entirely if not present.
+
+5. gender (OPTIONAL)
+   - Use exactly "Male" or "Female".
+   - Infer from the first name if not explicitly stated.
+   - Omit the field entirely if you cannot determine it.
+
+6. role (REQUIRED — always include one of the exact values below)
+   Allowed values (copy EXACTLY, including spaces and capitalisation):
+     "Pharmacist Manager"
+     "Pharmacist Admin"
+     "Pharmacist"
+     "Nurse"
+     "Lab Technician"
+     "HRIO"
+     "Dispensary Nurse"
+     "Physician"
+
+   Mapping rules (input is case-insensitive):
+     KRCHN / RN / Registered Nurse / Nursing Officer / Enrolled Nurse / Enrolled Community Health Nurse → "Nurse"
+     Dispensary Nurse / Dispenser / Dispensing Nurse                                                    → "Dispensary Nurse"
+     MLT / Medical Lab / Lab Tech / Laboratory Technician / Medical Laboratory Technician               → "Lab Technician"
+     HRIO / Health Records / Health Information Officer                                                  → "HRIO"
+     Pharmacist Manager / Pharmacy Manager                                                               → "Pharmacist Manager"
+     Pharmacist Admin / Pharmacy Admin                                                                   → "Pharmacist Admin"
+     Pharmacist / Pharmaceutical Technologist / Pharm Tech                                              → "Pharmacist"
+     MO / Medical Officer / Doctor / Clinical Officer / CO / KEPH / RCO / CHO / Community Health Officer → "Physician"
+     Unknown / missing / anything else                                                                   → "Physician"
+
+=== RULES ===
+- If BOTH email AND phone are missing for a person, skip that person entirely.
+- Do NOT add any fields that are not listed above.
+- Do NOT wrap the output in an object — return a plain array.
+- Do NOT include any text outside the JSON array.
 `.trim();
 
 const SERVICE_UNITS_PROMPT = `
@@ -178,11 +215,14 @@ type RawAIPractitioner = {
 };
 
 function buildPractitioner(raw: RawAIPractitioner): Practitioner | null {
-  if (!raw.email?.trim() && !raw.phone?.trim()) return null;
+  // Hard gate: must have a plausible email with "@"
+  const email = raw.email?.trim() ?? "";
+  if (!email || !email.includes("@")) return null;
+  if (!raw.phone?.trim()) return null;
   return {
     ...splitName(raw.name),
-    email: raw.email?.trim() ?? "",
-    phone: raw.phone ? normalizePhone(raw.phone) : "",
+    email,
+    phone: normalizePhone(raw.phone),
     ...(raw.national_id && { national_id: raw.national_id }),
     ...(raw.gender && { gender: raw.gender }),
     role: ALLOWED_ROLES.has(raw.role ?? "") ? raw.role : "Physician",

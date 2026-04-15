@@ -96,7 +96,16 @@ export function buildExtra(
       farewell_service_unit: null,
       default_processing_lab: "Main Lab",
     },
+    deployment_status: "pending", // new fields
+    deployment_percentage: "0.00", // new fields
   };
+}
+
+/** Returns true only if the string looks like a plausible email address */
+function isPlausibleEmail(value: string): boolean {
+  const trimmed = value.trim();
+  // Must contain exactly one "@", something before it, a "." after it, and no spaces
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
 }
 
 export async function extractUsers(
@@ -145,10 +154,10 @@ export async function extractUsers(
     const str = (r: unknown[], i: number) =>
       i >= 0 ? String(r[i] ?? "").trim() : "";
 
-    // Valid: must have name AND email AND phone — all three required
     const valid = data.filter((r) => {
       const hasName = iName >= 0 && str(r, iName).length > 0;
-      const hasEmail = iEmail >= 0 && str(r, iEmail).length > 0;
+      // Require a plausible email — rows without a valid "@domain.tld" are skipped entirely
+      const hasEmail = iEmail >= 0 && isPlausibleEmail(str(r, iEmail));
       const hasPhone = iPhone >= 0 && str(r, iPhone).length > 0;
       return hasName && hasEmail && hasPhone;
     });
@@ -158,7 +167,7 @@ export async function extractUsers(
         users: [],
         total: 0,
         error:
-          "No valid user rows found. Each row must have a name, email, and phone number.",
+          "No valid user rows found. Each row must have a name, a valid email address, and a phone number.",
       };
 
     const preview = valid.slice(0, MAX_PREVIEW).map((r) => ({

@@ -13,14 +13,14 @@ export async function fetchJobSubscriptionToken(jobId: string) {
   return token;
 }
 
-export async function triggerJobAction(jobId: string) {
+export async function triggerJobAction(jobId: string, type?: string) {
   const session = await authClient.getSession({
     fetchOptions: { headers: await headers() },
   });
 
   const res = await inngest.send({
     name: "execute/workflow",
-    data: { jobId, userId: session?.data?.user.id },
+    data: { jobId, userId: session?.data?.user.id, type },
   });
 
   return res;

@@ -66,6 +66,7 @@ class WorkflowRunner:
 
     @modal.fastapi_endpoint(method="POST")
     async def run_job(self, request: JobRequest):
+        from automation.deploy import run_facility_deploy
         from automation.facility_setup import run_facility_setup
         from automation.shif_config import run_pipeline
 
@@ -87,6 +88,9 @@ class WorkflowRunner:
 
                 if job["type"] == "self_onboarding":
                     await run_facility_setup(job)
+
+                elif job["type"] == "deployment":
+                    await run_facility_deploy(job)
 
                 elif job["type"] == "shif_config":
                     print("⏳ Running shif_config pipeline ...")

@@ -1,6 +1,13 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, Play, Trash2, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  Play,
+  Trash2,
+  AlertCircle,
+  Rocket,
+} from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,9 +22,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { getStatusConfig, getTypeConfig } from "@/features/jobs/config";
-import { useTriggerJob } from "@/features/jobs/hooks/use-create-update";
+import {
+  useCreateUpdateJob,
+  useTriggerJob,
+} from "@/features/jobs/hooks/use-create-update";
 import { useDeleteJob } from "@/features/jobs/hooks/use-delete-job";
 import { useGetJob } from "@/features/jobs/hooks/use-get-job";
+import { Job, JOB_TYPES } from "@/features/jobs/types";
 
 export default function JobDetailPage() {
   const { workflowId, jobId } = useParams<{
@@ -27,6 +38,7 @@ export default function JobDetailPage() {
   const router = useRouter();
 
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const { mutate: save, isPending } = useCreateUpdateJob();
 
   const { data: job, isLoading, isError } = useGetJob(jobId!);
   const { mutate: deleteJob, isPending: isDeleting } = useDeleteJob();
@@ -41,6 +53,24 @@ export default function JobDetailPage() {
   function handleTrigger() {
     triggerJob(jobId!);
   }
+
+  const updateJobType = async () => {
+    const { id, description, credential_id, error, extra, ...rest } =
+      job as Job;
+    save(
+      {
+        id,
+        ...rest,
+        type: JOB_TYPES[2],
+        description: description ?? undefined,
+      },
+      {
+        onSuccess: (data) => {
+          triggerJob(data.id);
+        },
+      },
+    );
+  };
 
   if (isLoading) {
     return (
@@ -91,6 +121,9 @@ export default function JobDetailPage() {
   const TypeIcon = typeCfg.icon;
   const isBusy = isDeleting || isTriggering;
   const isTransient = ["running"].includes(job.status);
+  const canDeploy =
+    job.type === "self_onboarding" && job.status === "completed";
+  const canRedeploy = job.type === "deployment";
 
   return (
     <div className="flex flex-col gap-5">
@@ -134,6 +167,34 @@ export default function JobDetailPage() {
             )}
             Trigger
           </Button>
+          {canDeploy && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 px-2.5 gap-1.5 text-xs"
+              disabled={isBusy}
+              onClick={updateJobType}
+            >
+              <Rocket size={11} />
+              Deploy
+            </Button>
+          )}
+          {canRedeploy && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 px-2.5 gap-1.5 text-xs"
+              disabled={isBusy}
+              onClick={handleTrigger}
+            >
+              {isTriggering ? (
+                <Loader2 size={11} className="animate-spin" />
+              ) : (
+                <Rocket size={11} />
+              )}
+              Redeploy
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
