@@ -38,7 +38,7 @@ export default function WorkflowClient() {
 
   // ── URL state ──────────────────────────────────────────────────────────────
   const { search, page, limit, setSearch, setPage } = useTableParams({
-    defaultLimit: 10,
+    defaultLimit: 5,
   });
 
   const debouncedSearch = useDebounce(search, 400);

@@ -11,7 +11,7 @@ interface UseGetWorkflowsParams {
 
 export const useGetWorkflows = ({
   page = 1,
-  limit = 10,
+  limit = 5,
   search = "",
   sort = "created_at:desc",
 }: UseGetWorkflowsParams = {}) => {
