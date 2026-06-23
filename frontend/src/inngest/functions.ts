@@ -35,12 +35,16 @@ export const executeWorkflow = inngest.createFunction(
       error: null,
     });
 
-    const result = await step.run("call-modal", async () => {
+    await step.run("set-running", async () => {
       await updateJobStatus(jobId, "running");
-      await step.realtime.publish("publish-running", ch.status, {
-        status: "running",
-        error: null,
-      });
+    });
+    await step.realtime.publish("publish-running", ch.status, {
+      status: "running",
+      error: null,
+    });
+
+    const result = await step.run("call-modal", async () => {
+      console.log("modal url", MODAL_URL);
       const { data } = await axios.post(
         MODAL_URL,
         { job_id: jobId },
